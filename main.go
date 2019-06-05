@@ -107,7 +107,7 @@ func main() {
 			TimeSinceLast string
 			Records       []*Record
 		}
-		total, minorTotal, majorTotal, extremeTotal, timeSince, err := Stats(conn)
+		total, minorTotal, majorTotal, extremeTotal, hoursSinceLast, err := Stats(conn)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -116,10 +116,10 @@ func main() {
 			MinorTotal:    minorTotal,
 			MajorTotal:    majorTotal,
 			ExtremeTotal:  extremeTotal,
-			TimeSinceLast: fmt.Sprintf("%.0f", timeSince.Hours()),
+			TimeSinceLast: hoursSinceLast,
 			Records:       []*Record{},
 		}
-		err = conn.Select(&data.Records, `SELECT id, category, notes, recorded_at FROM events WHERE archived=false ORDER BY recorded_at DESC`)
+		err = conn.Select(&data.Records, `SELECT id, category, notes, recorded_at FROM events WHERE archived=0 ORDER BY recorded_at DESC`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -150,25 +150,25 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+*port, r))
 }
 
-func Stats(conn *sqlx.DB) (int, int, int, int, time.Duration, error) {
+func Stats(conn *sqlx.DB) (int, int, int, int, string, error) {
 	data := []*Record{}
-	err := conn.Select(&data, `SELECT id, category, notes, recorded_at FROM events WHERE archived=false ORDER BY recorded_at DESC`)
+	err := conn.Select(&data, `SELECT id, category, notes, recorded_at FROM events WHERE archived=0 ORDER BY recorded_at DESC`)
 	if err != nil {
-		return 0, 0, 0, 0, time.Duration(0), err
+		return 0, 0, 0, 0, "", err
 	}
 
 	var total int
-	conn.Get(&total, "SELECT COUNT(id) FROM events WHERE archived=false")
+	conn.Get(&total, "SELECT COUNT(id) FROM events WHERE archived=0")
 	var minorTotal int
-	conn.Get(&minorTotal, "SELECT COUNT(id) FROM events WHERE category='minor' WHERE archived=false")
+	conn.Get(&minorTotal, "SELECT COUNT(id) FROM events WHERE category='minor' AND archived=0")
 	var majorTotal int
-	conn.Get(&majorTotal, "SELECT COUNT(id) FROM events WHERE category='major' WHERE archived=false")
+	conn.Get(&majorTotal, "SELECT COUNT(id) FROM events WHERE category='major' AND archived=0")
 	var extremeTotal int
-	conn.Get(&extremeTotal, "SELECT COUNT(id) FROM events WHERE category='extreme' WHERE archived=false")
+	conn.Get(&extremeTotal, "SELECT COUNT(id) FROM events WHERE category='extreme' AND archived=0")
 	var lastRecorded time.Time
-	conn.Get(&lastRecorded, "SELECT recorded_at FROM events order BY recorded_at DESC limit 1 WHERE archived=false")
-	timeSinceLast := time.Since(lastRecorded)
-	return total, minorTotal, majorTotal, extremeTotal, timeSinceLast, nil
+	conn.Get(&lastRecorded, "SELECT recorded_at FROM events WHERE archived=0 order BY recorded_at DESC limit 1")
+	hoursSinceLast := fmt.Sprintf("%.0f", time.Since(lastRecorded).Hours())
+	return total, minorTotal, majorTotal, extremeTotal, hoursSinceLast, nil
 
 }
 
