@@ -218,10 +218,10 @@ const HTMLIndex = `
 				/>
 				<p style="text-align:center">Hours since last report: {{.TimeSinceLast}}</p>
 				<p style="text-align:center">
-<small>Total Reports: {{.Total}}</small><br/>
-<small>Minor Reports: {{.MinorTotal}}</small><br/>
-<small>Major Reports: {{.MajorTotal}}</small><br/>
-<small>Extreme Reports: {{.ExtremeTotal}}</small>
+					<small>Total Reports: {{.Total}}</small><br/>
+					<small>Minor Reports: {{.MinorTotal}}</small><br/>
+					<small>Major Reports: {{.MajorTotal}}</small><br/>
+					<small>Extreme Reports: {{.ExtremeTotal}}</small>
 				</p>
 
 			</div>
@@ -245,7 +245,7 @@ const HTMLIndex = `
 							</p>
 
 							<p>{{.Notes}}</p>
-							<form style="margin-bottom: 0" action="/delete?id={{.ID}}" method="post">
+							<form style="margin-bottom: 0" action="/delete?id={{.ID}}" method="post" onsubmit="return confirm('Are you sure you want to delete this record?');">
 								<input class="button button-outline" type="submit" name="delete" value="Delete" />
 							</form>
 						</div>
