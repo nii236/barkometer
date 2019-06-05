@@ -158,15 +158,15 @@ func Stats(conn *sqlx.DB) (int, int, int, int, time.Duration, error) {
 	}
 
 	var total int
-	conn.Get(&total, "SELECT COUNT(id) FROM events")
+	conn.Get(&total, "SELECT COUNT(id) FROM events WHERE archived=false")
 	var minorTotal int
-	conn.Get(&minorTotal, "SELECT COUNT(id) FROM events WHERE category='minor'")
+	conn.Get(&minorTotal, "SELECT COUNT(id) FROM events WHERE category='minor' WHERE archived=false")
 	var majorTotal int
-	conn.Get(&majorTotal, "SELECT COUNT(id) FROM events WHERE category='major'")
+	conn.Get(&majorTotal, "SELECT COUNT(id) FROM events WHERE category='major' WHERE archived=false")
 	var extremeTotal int
-	conn.Get(&extremeTotal, "SELECT COUNT(id) FROM events WHERE category='extreme'")
+	conn.Get(&extremeTotal, "SELECT COUNT(id) FROM events WHERE category='extreme' WHERE archived=false")
 	var lastRecorded time.Time
-	conn.Get(&lastRecorded, "SELECT recorded_at FROM events order BY recorded_at DESC limit 1")
+	conn.Get(&lastRecorded, "SELECT recorded_at FROM events order BY recorded_at DESC limit 1 WHERE archived=false")
 	timeSinceLast := time.Since(lastRecorded)
 	return total, minorTotal, majorTotal, extremeTotal, timeSinceLast, nil
 
