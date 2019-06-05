@@ -127,7 +127,7 @@ func main() {
 	})
 
 	log.Infow("Running server", "port", *port)
-	http.ListenAndServe(":"+*port, r)
+	log.Fatal(http.ListenAndServe(":"+*port, r))
 }
 
 const HTMLNew = `
@@ -163,40 +163,49 @@ const HTMLIndex = `
 	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic" />
 	<link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css" />
 	<link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css" />
+
 	<body>
 		<section class="container">
-		<h1>Barkometer</h1>
-		<input type="button" onclick="location.href='/new';" value="Report new bark" />
+			<div style="margin-left:auto; margin-right:auto;">
+				<h1 style="text-align:center">Barkometer</h1>
+				<input
+					style="display:block; margin-left:auto; margin-right:auto;"
+					type="button"
+					onclick="location.href='/new';"
+					value="Report new bark"
+				/>
+			</div>
+			<hr />
+			<p style="text-align:center">
+				<a href="mailto:jtnguyen236@gmail.com?Subject=Barkometer%20Bug%20Report" target="_top">Report bugs here</a>
+			</p>
+			<hr />
+			<div class="container">
+				<div class="row">
+					<div class="row-wrap">
+						{{range .}}
+						<div class="column">
+							<h3>Incident #{{.ID}} - {{.Category}}</h3>
+							<p>
+								<em>Time: {{.RecordedAt.Format "15:04"}}</em>
+								<br />
+								<em>Day: {{.RecordedAt.Format "Monday"}}</em>
+								<br />
+								<em>Date: {{.RecordedAt.Format "02 Jan 2006"}}</em>
+							</p>
 
-		<table>
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Category</th>
-				<th>Notes</th>
-				<th>Recorded At</th>
-				<th>Actions</th>
-			</tr>
-			</thead>
-			<tbody>
-			{{range .}}
-			<tr>
-			<td>Incident #{{.ID}}</td>
-			<td>
-				<em>{{.Category}}</em>
-			</td>
-			<td>{{.Notes}}</td>
-			<td>{{.RecordedAt.Format "02 Jan 2006 - Mon - 15:04"}}</td>
-			<td>
-				<form style="margin-bottom: 0" action="/delete?id={{.ID}}" method="post">
-					<input class="button button-outline" type="submit" name="delete" value="Delete" />
-				</form>
-			</td>
-			</tr>
-			{{end}}
-			</tbody>
-		</table>
+							<p>{{.Notes}}</p>
+							<form style="margin-bottom: 0" action="/delete?id={{.ID}}" method="post">
+								<input class="button button-outline" type="submit" name="delete" value="Delete" />
+							</form>
+						</div>
+						<hr />
+						{{ end }}
+					</div>
+				</div>
+			</div>
 		</section>
 	</body>
 </html>
+
 `
