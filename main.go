@@ -99,7 +99,6 @@ func main() {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		templateIndex, err = template.ParseFiles("./index.html")
 		type Data struct {
 			Total         int
 			MinorTotal    int
@@ -217,6 +216,14 @@ const HTMLIndex = `
 					onclick="location.href='/new';"
 					value="Report new bark"
 				/>
+				<p style="text-align:center">Hours since last report: {{.TimeSinceLast}}</p>
+				<p style="text-align:center">
+<small>Total Reports: {{.Total}}</small><br/>
+<small>Minor Reports: {{.MinorTotal}}</small><br/>
+<small>Major Reports: {{.MajorTotal}}</small><br/>
+<small>Extreme Reports: {{.ExtremeTotal}}</small>
+				</p>
+
 			</div>
 			<hr />
 			<p style="text-align:center">
@@ -226,7 +233,7 @@ const HTMLIndex = `
 			<div class="container">
 				<div class="row">
 					<div class="row-wrap">
-						{{range .}}
+						{{range .Records}}
 						<div class="column">
 							<h3>Incident #{{.ID}} - {{.Category}}</h3>
 							<p>
@@ -250,5 +257,6 @@ const HTMLIndex = `
 		</section>
 	</body>
 </html>
+
 
 `
