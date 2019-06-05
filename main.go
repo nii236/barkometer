@@ -39,8 +39,10 @@ CREATE TABLE IF NOT EXISTS events (
 	category			VARCHAR(64) NOT NULL,
 	notes				VARCHAR(200) NOT NULL,
 	recorded_at			TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	recorded_by			VARCHAR(64),
 	archived			BOOL NOT NULL DEFAULT false,
-	archived_at			TIMESTAMP
+	archived_at			TIMESTAMP,
+	archived_by			VARCHAR(64)
 );
 `
 
@@ -92,7 +94,7 @@ func main() {
 			return
 		}
 
-		_, err := conn.Exec(`UPDATE events SET archived=true, archived_at=$1 WHERE id=$2`, time.Now(), id)
+		_, err := conn.Exec(`UPDATE events SET archived=true, archived_at=$1, archived_by=$2 WHERE id=$3`, time.Now(), r.RemoteAddr, id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -137,7 +139,7 @@ func main() {
 			return
 		}
 
-		_, err = conn.Exec("INSERT INTO events (category, notes, recorded_at) VALUES ($1, $2, $3)", category, notes, time.Now())
+		_, err = conn.Exec("INSERT INTO events (category, notes, recorded_at, recorded_by) VALUES ($1, $2, $3, $4)", category, notes, time.Now(), r.RemoteAddr)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
