@@ -175,7 +175,7 @@ func Stats(conn *sqlx.DB) (int, int, int, int, string, error) {
 const HTMLNew = `
 <!DOCTYPE html>
 <html lang="en">
-	<title>Create new</title>
+	<title>Create new barko</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic" />
 	<link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css" />
@@ -200,7 +200,7 @@ const HTMLNew = `
 const HTMLIndex = `
 <!DOCTYPE html>
 <html lang="en">
-	<title>Create new</title>
+	<title>List barkos</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic" />
 	<link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css" />
