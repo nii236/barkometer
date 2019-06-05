@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"os"
@@ -98,8 +99,28 @@ func main() {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		data := []*Record{}
-		err := conn.Select(&data, `SELECT id, category, notes, recorded_at FROM events WHERE archived=false ORDER BY recorded_at DESC`)
+		templateIndex, err = template.ParseFiles("./index.html")
+		type Data struct {
+			Total         int
+			MinorTotal    int
+			MajorTotal    int
+			ExtremeTotal  int
+			TimeSinceLast string
+			Records       []*Record
+		}
+		total, minorTotal, majorTotal, extremeTotal, timeSince, err := Stats(conn)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		data := &Data{
+			Total:         total,
+			MinorTotal:    minorTotal,
+			MajorTotal:    majorTotal,
+			ExtremeTotal:  extremeTotal,
+			TimeSinceLast: fmt.Sprintf("%.0f", timeSince.Hours()),
+			Records:       []*Record{},
+		}
+		err = conn.Select(&data.Records, `SELECT id, category, notes, recorded_at FROM events WHERE archived=false ORDER BY recorded_at DESC`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -128,6 +149,28 @@ func main() {
 
 	log.Infow("Running server", "port", *port)
 	log.Fatal(http.ListenAndServe(":"+*port, r))
+}
+
+func Stats(conn *sqlx.DB) (int, int, int, int, time.Duration, error) {
+	data := []*Record{}
+	err := conn.Select(&data, `SELECT id, category, notes, recorded_at FROM events WHERE archived=false ORDER BY recorded_at DESC`)
+	if err != nil {
+		return 0, 0, 0, 0, time.Duration(0), err
+	}
+
+	var total int
+	conn.Get(&total, "SELECT COUNT(id) FROM events")
+	var minorTotal int
+	conn.Get(&minorTotal, "SELECT COUNT(id) FROM events WHERE category='minor'")
+	var majorTotal int
+	conn.Get(&majorTotal, "SELECT COUNT(id) FROM events WHERE category='major'")
+	var extremeTotal int
+	conn.Get(&extremeTotal, "SELECT COUNT(id) FROM events WHERE category='extreme'")
+	var lastRecorded time.Time
+	conn.Get(&lastRecorded, "SELECT recorded_at FROM events order BY recorded_at DESC limit 1")
+	timeSinceLast := time.Since(lastRecorded)
+	return total, minorTotal, majorTotal, extremeTotal, timeSinceLast, nil
+
 }
 
 const HTMLNew = `
